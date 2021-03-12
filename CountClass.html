@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CountClass</title>
+    <style>
+        .count-number-container{
+            position: relative;
+            display: inline-block;
+            width: 180px;
+            line-height: 38px;
+        }
+        .count-number-btn_decrease,.count-number-btn_increase{
+            position: absolute;
+            z-index: 1;
+            top: 1px;
+            width: 40px;
+            height: auto;
+            text-align: center;
+            color: #606266;
+            background: #f5f7fa;
+            font-size: 13px;
+            user-select: none;
+        }
+        .count-number-btn_decrease{
+            left: 1px;
+            border-radius: 4px 0 0 4px;
+            border-right: 1px solid #dcdfe6;
+        }
+        .count-number-btn_increase{
+            right: 1px;
+            border-radius: 0 4px 4px 0;
+            border-left:1px solid #dcdfe6;
+        }
+        .count-number-input{
+            box-sizing: border-box;
+            display: inline-block;
+            width: 100%;
+            height: 40px;
+            padding: 0 50px;
+            border-radius: 4px;
+            border: 1px solid #dcdfe6;
+            line-height: 40px;
+            color: #606266;
+            text-align: center;
+            outline: none;
+            transition: border-color .2s cubic-bezier(0.645, 0.045, 0.355, 1);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="count-wrapper">
+        <div class="count-number-container" id="count_1">
+            <!-- <span class="count-number-btn_decrease">-</span>
+            <span class="count-number-btn_increase">+</span>
+            <div class="count-number-content">
+                <input class="count-number-input" type="text" disabled name="count" value="0" /> 
+            </div>-->
+        </div>
+        <div class="count-number-container" id="count_2">
+            <!-- <span class="count-number-btn_decrease">-</span>
+            <span class="count-number-btn_increase">+</span>
+            <div class="count-number-content">
+                <input type="text"  class="count-number-input" disabled name="count" value="0"> 
+            </div>-->
+        </div>
+    </div>
+    <script>
+        //1.构建count类
+        class Count{
+            constructor(props) {
+                //2.定义初始化接受的数据
+                this.state = {
+                    id: props.id,
+                    value: props.value || 0,
+                    change:props.change,
+                    _countNumberInput: null,
+                };
+                //3.定义静态工具方法
+                this._$ = selector => document.querySelector(selector);//用于选择DOM
+                this._createElement = type => document.createElement(type);//用于创建DOM
+                this._setContent = (elem, content) => elem.textContent = content;//用于文本赋值
+                this._appendChild = (container, node) => container.appendChild(node);//用于增加子节点
+                this._init();
+            }
+            _init() {
+                //5.在Count.\_init 中调用_addHTML
+                this._addHTML();
+            }
+            //在Count中定义\_addHTML 方法
+            _addHTML(){
+                //创建计数器子元素的HTML元素属性，并插入到页面
+                let $ = this._$;
+                let idContainer = $(`#${this.state.id}`);
+                let countNumberContainer = this._createElement('div');
+                let countNumberContent = this._createElement('div');
+                let countNumberBtnDecrease = this._createElement('span');
+                let countNumberBtnIncrease = this._createElement('span');
+                let countNumberInput = this._createElement('input');
+                countNumberContent.setAttribute('class','count-number-content');
+                countNumberContainer.setAttribute('class','count-number-container');
+                countNumberBtnDecrease.setAttribute('class','count-number-btn_decrease');
+                countNumberBtnIncrease.setAttribute('class','count-number-btn_increase');
+                countNumberInput.setAttribute('class','count-number-input');
+                countNumberInput.setAttribute('type','text');
+                countNumberInput.value = this.state.value;
+                countNumberInput.disabled = true;
+                this._setContent(countNumberBtnDecrease,'-');
+                this._setContent(countNumberBtnIncrease,'+');
+                this._appendChild(countNumberContainer,countNumberBtnDecrease);
+                this._appendChild(countNumberContainer,countNumberBtnIncrease);
+                this._appendChild(countNumberContent,countNumberInput);
+                this._appendChild(countNumberContainer,countNumberContent);
+                this._appendChild(idContainer,countNumberContainer);
+
+                this.state._countNumberInput = countNumberInput; 
+
+                countNumberBtnDecrease.addEventListener('click',this.decrease.bind(this));
+                countNumberBtnIncrease.addEventListener('click',this.increase.bind(this));
+            }
+
+            //1 创建设置元素的方法
+            setValue(val){
+                let isNumber = (typeof val === 'number');
+                if(isNumber){
+                    this.state.value = val;
+                    this.state._countNumberInput.value = val;
+                    typeof this.state.change === 'function' && this.state.change(val);
+                }else{
+                    console.log('参数必须是数字');
+                }
+            }
+            //2.创建获取元素的方法
+            getValue() {
+                return this.state.value;
+            }
+            //3.创建递增方法
+            decrease() {
+                let value = this.state.value - 1;
+                this.setValue(value);
+            }
+            increase() {
+                let value = this.state.value +1;
+                this.setValue(value);
+            }
+        }
+        //创建PAFGE单例
+        const PAGE = {
+            data: {
+                count_1: null,
+                count_2: null,
+            },
+            init: function() {
+                this.initCount();
+            },
+            //创建PAGE.initCount方法 用于实例化两个计数器，并传入不同的默认值
+            initCount : function() {
+                PAGE.data.count_1 = new Count({
+                    id: 'count_1',
+                    value: 1,
+                    change: function(val){
+                        console.log(val);
+                    }
+                })
+                PAGE.data.count_2 = new Count({
+                    id: 'count_2',
+                    value:10,
+                    change: function(val){
+                        console.log(val);
+                    }
+                })
+            }
+        }
+        PAGE.init();
+        /*//1.类声明
+          class Parent {
+              //2.类构造函数，constructor 方法是一个特殊的方法，其用于创建和初始化使用class创建的一个对象，在创建的时候执行，可以接收初始化传入的参数。
+              constructor(height, width) {
+                  this.height = height;
+                  this.width = width;
+              }
+              //Method
+              calcArea() {
+                  return this.height * this.width;
+              }
+          }
+          //3.创建子类
+          class Rectangle extends Parent {
+               constructor(height, width) {
+                   super(height, width)
+               }
+              }
+          const square = new Rectangle(10, 10);
+          console.log(square.calcArea());*/
+    </script>
+</body>
+
+</html>
